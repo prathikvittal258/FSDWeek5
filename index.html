@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Appointment Booking</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: rgb(2, 0, 36);
+            background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(9, 121, 74, 1) 35%, rgba(0, 212, 255, 1) 100%);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: radial-gradient(circle, rgba(34, 193, 195, 1) 0%, rgba(253, 187, 45, 1) 100%);
+            border-radius: 12px;
+            box-shadow:
+                0 0 15px rgba(0, 0, 0, 0.3),
+                0 0 30px rgba(34, 193, 195, 0.7),
+                0 0 60px rgba(34, 193, 195, 0.5);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 2.5em;
+            margin: 0;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+            animation: textGlow 2s infinite, slideIn 1s ease-out;
+        }
+
+        /* Section Styles */
+        section {
+            background: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        section h2 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            position: relative;
+            text-align: center;
+            font-weight: bold;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: textGlow 1.5s ease-in-out infinite;
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 6px;
+            background: #6a11cb;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(106, 17, 203, 0.7);
+        }
+
+        /* Form Elements */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input,
+        select,
+        button {
+            padding: 14px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s, background-color 0.3s;
+            background-color: #f8f9fa;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 8px rgba(106, 17, 203, 0.5);
+            outline: none;
+        }
+
+        button {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s, filter 0.3s;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+        }
+
+        button:hover {
+            background: linear-gradient(to right, #5a0cbe, #2050e8);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            filter: brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Feedback */
+        .feedback {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .feedback.success {
+            color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .feedback.error {
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Loading Animation */
+        #loading-viewing {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #loading-viewing.hidden {
+            display: none;
+        }
+
+        #loading-viewing::before {
+            content: '';
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #6a11cb;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        #loading-viewing::after {
+            content: 'Loading...';
+            font-size: 20px;
+            color: #6a11cb;
+            margin-top: 10px;
+            animation: fadeIn 2s infinite alternate;
+        }
+
+        /* Appointment Item Styles */
+        .appointment-item {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin: 15px 0;
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+            animation: fadeIn 0.5s ease-out, slideUp 0.5s ease-out;
+        }
+
+        .appointment-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            background-color: #f0f8ff;
+        }
+
+        /* Time Slot Styles */
+        .time-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .time-slot-button {
+            padding: 12px 18px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .time-slot-button.available {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .time-slot-button.booked {
+            background: #dc3545;
+            color: #fff;
+            cursor: not-allowed;
+        }
+
+        .time-slot-button:hover {
+            background-color: #1e7e34;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .time-slot-button.booked:hover {
+            background-color: #c82333;
+            transform: none;
+        }
+
+        /* Doctor Card Styles */
+        .doctor-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin: 15px 0;
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            background-color: #f0f8ff;
+        }
+
+        .doctor-card::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(106, 17, 203, 0.2) 0%, rgba(106, 17, 203, 0) 100%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            opacity: 0.5;
+        }
+
+        .doctor-card h3 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #333;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .doctor-card p {
+            margin: 5px 0;
+            font-size: 1em;
+            color: #666;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Animations Keyframes */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                text-shadow: 0 0 15px rgba(106, 17, 203, 0.3);
+            }
+
+            50% {
+                text-shadow: 0 0 25px rgba(106, 17, 203, 0.7);
+            }
+
+            100% {
+                text-shadow: 0 0 15px rgba(106, 17, 203, 0.3);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes textGlow {
+            0% {
+                text-shadow: 0 0 5px rgba(106, 17, 203, 0.6);
+            }
+
+            50% {
+                text-shadow: 0 0 15px rgba(106, 17, 203, 0.8);
+            }
+
+            100% {
+                text-shadow: 0 0 5px rgba(106, 17, 203, 0.6);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Doctor Appointment Booking</h1>
+        </header>
+        <main>
+            <!-- Booking Section -->
+            <section id="booking">
+                <h2>Book an Appointment</h2>
+                <form id="booking-form">
+                    <input type="text" id="patient-name" placeholder="Patient Name" required>
+                    <select id="doctor-select" required>
+                        <!-- Doctor options will be dynamically populated -->
+                    </select>
+                    <input type="date" id="appointment-date" required>
+                    <input type="time" id="appointment-time" required>
+                    <button type="submit">Book Appointment</button>
+                </form>
+                <div id="booking-feedback" class="feedback"></div>
+                <div id="loading-booking" class="loading hidden"></div>
+            </section>
+
+            <!-- Doctors Section -->
+            <section id="doctors">
+                <h2>Available Doctors</h2>
+                <div id="doctors-list" class="doctors-list">
+                    <!-- Doctor cards will be dynamically populated -->
+                </div>
+            </section>
+            <!-- Cancellation Section -->
+            <section id="cancellation">
+                <h2>Cancel an Appointment</h2>
+                <form id="cancellation-form">
+                    <input type="text" id="appointment-id" placeholder="Appointment ID" required>
+                    <button type="submit">Cancel Appointment</button>
+                </form>
+                <div id="cancellation-feedback" class="feedback"></div>
+                <div id="loading-cancellation" class="loading hidden"></div>
+            </section>
+
+            <!-- Viewing Appointments Section -->
+            <section id="viewing">
+                <h2>View Appointments</h2>
+                <button id="view-appointments">Show All Appointments</button>
+                <div id="appointments-list" class="appointments-list">
+                    <!-- Appointments will be dynamically displayed here -->
+                </div>
+                <div id="loading-viewing" class="loading hidden"></div>
+            </section>
+
+        </main>
+        <script src="scripts.js"></script>
+        <script>
+            // Function to generate time slots
+            function generateTimeSlots(startHour, endHour, intervalMinutes) {
+                const slots = [];
+                let currentHour = startHour;
+                let currentMinute = 0;
+
+                while (currentHour < endHour || (currentHour === endHour && currentMinute === 0)) {
+                    const period = currentHour >= 12 ? 'PM' : 'AM';
+                    const displayHour = currentHour % 12 || 12; // Convert 24-hour format to 12-hour format
+                    const displayMinute = currentMinute.toString().padStart(2, '0');
+                    slots.push(`${displayHour}:${displayMinute} ${period}`);
+
+                    currentMinute += intervalMinutes;
+                    if (currentMinute >= 60) {
+                        currentMinute = 0;
+                        currentHour++;
+                    }
+                }
+                return slots;
+            }
+
+            // Define time slot parameters
+            const timeSlots = generateTimeSlots(10, 13, 10);
+
+            // Sample booked slots (example)
+            const bookedSlots = new Set([
+                // Example booked slots
+            ]);
+
+            // Sample doctor data
+            const doctors = [
+                { id: 1, name: 'Dr. Smith', totalSlots: 12, availableSlots: 12 },
+                { id: 2, name: 'Dr. Johnson', totalSlots: 18, availableSlots: 18 },
+                { id: 3, name: 'Dr. Lee', totalSlots: 10, availableSlots: 10 },
+            ];
+
+            // Sample appointments data
+            const appointments = [];
+
+            // Populate doctor options and doctor cards
+            function populateDoctors() {
+                const doctorSelect = document.getElementById('doctor-select');
+                const doctorsList = document.getElementById('doctors-list');
+
+                // Clear existing options
+                doctorSelect.innerHTML = '';
+
+                doctors.forEach(doctor => {
+                    // Populate doctor select options
+                    const option = document.createElement('option');
+                    option.value = doctor.id;
+                    option.textContent = doctor.name;
+                    doctorSelect.appendChild(option);
+                });
+
+                // Clear existing doctor cards
+                doctorsList.innerHTML = '';
+
+                // Create doctor cards without time slots
+                doctors.forEach(doctor => {
+                    const doctorCard = document.createElement('div');
+                    doctorCard.classList.add('doctor-card');
+
+                    doctorCard.innerHTML = `
+        <div class="doctor-card-content">
+            <p class="doctor-name"><strong>${doctor.name}</strong></p>
+            <p>Total Slots: <span class="doctor-stats">${doctor.totalSlots}</span></p>
+            <p>Available Slots: <span class="doctor-stats ${doctor.availableSlots > 0 ? 'available' : 'booked'}">${doctor.availableSlots}</span></p>
+            <p>Booked Slots: <span class="doctor-stats">${doctor.totalSlots - doctor.availableSlots}</span></p>
+        </div>
+    `;
+                    doctorsList.appendChild(doctorCard);
+                });
+            }
+
+            // Handle appointment booking
+            document.getElementById('booking-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const feedback = document.getElementById('booking-feedback');
+                const loading = document.getElementById('loading-booking');
+
+                loading.classList.remove('hidden');
+
+                setTimeout(() => {
+                    const patientName = document.getElementById('patient-name').value;
+                    const doctorId = parseInt(document.getElementById('doctor-select').value);
+                    const appointmentDate = document.getElementById('appointment-date').value;
+                    const appointmentTime = document.getElementById('appointment-time').value;
+
+                    const doctor = doctors.find(doc => doc.id === doctorId);
+
+                    if (doctor && doctor.availableSlots > 0) {
+                        const appointmentId = 'APP' + (appointments.length + 1);
+                        appointments.push({ id: appointmentId, patientName, doctorName: doctor.name, date: appointmentDate, time: appointmentTime });
+                        doctor.availableSlots--;
+                        bookedSlots.add(appointmentTime); // Update booked slots
+
+                        // Feedback
+                        feedback.textContent = 'Appointment booked successfully!';
+                        feedback.className = 'feedback success';
+                        feedback.style.opacity = '1'; // Ensure visibility
+
+                        // Hide the message after 2 seconds
+                        setTimeout(() => {
+                            feedback.style.opacity = '0';
+                        }, 2000);
+
+                        // Update the doctor cards
+                        populateDoctors();
+                    } else {
+                        feedback.textContent = 'Failed to book appointment. Doctor may not be available.';
+                        feedback.className = 'feedback error';
+                        feedback.style.opacity = '1'; // Ensure visibility
+                    }
+
+                    loading.classList.add('hidden');
+                    document.getElementById('booking-form').reset();
+                }, 1000);
+            });
+
+            // Handle appointment cancellation
+            document.getElementById('cancellation-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const feedback = document.getElementById('cancellation-feedback');
+                const loading = document.getElementById('loading-cancellation');
+
+                loading.classList.remove('hidden');
+
+                setTimeout(() => {
+                    const appointmentId = document.getElementById('appointment-id').value;
+                    const appointmentIndex = appointments.findIndex(app => app.id === appointmentId);
+
+                    if (appointmentIndex > -1) {
+                        const appointment = appointments.splice(appointmentIndex, 1)[0];
+                        const doctor = doctors.find(doc => doc.name === appointment.doctorName);
+                        if (doctor) {
+                            doctor.availableSlots++;
+                            bookedSlots.delete(appointment.time); // Update booked slots
+                        }
+
+                        feedback.textContent = 'Appointment cancelled successfully!';
+                        feedback.className = 'feedback success';
+                        feedback.style.opacity = '1'; // Ensure visibility
+
+                        // Update the appointments list
+                        updateAppointmentsList();
+
+                        // Update the doctor cards
+                        populateDoctors();
+
+                        // Hide the feedback message after 2 seconds
+                        setTimeout(() => {
+                            feedback.style.opacity = '0';
+                        }, 2000);
+                    } else {
+                        feedback.textContent = 'Failed to cancel appointment. ID may be incorrect.';
+                        feedback.className = 'feedback error';
+                        feedback.style.opacity = '1'; // Ensure visibility
+
+                        // Hide the feedback message after 2 seconds
+                        setTimeout(() => {
+                            feedback.style.opacity = '0';
+                        }, 2000);
+                    }
+
+                    loading.classList.add('hidden');
+                    document.getElementById('cancellation-form').reset();
+                }, 1000);
+            });
+
+            // Handle viewing all appointments
+            document.getElementById('view-appointments').addEventListener('click', updateAppointmentsList);
+
+            // Function to update the appointments list
+            function updateAppointmentsList() {
+                const appointmentsList = document.getElementById('appointments-list');
+                const loading = document.getElementById('loading-viewing');
+
+                loading.classList.remove('hidden');
+
+                setTimeout(() => {
+                    appointmentsList.innerHTML = '';
+
+                    if (appointments.length === 0) {
+                        appointmentsList.innerHTML = '<p>No appointments found.</p>';
+                    } else {
+                        appointmentsList.innerHTML = appointments.map(app => `
+                <div class="appointment-item">
+                    <p><strong>Appointment ID:</strong> ${app.id}</p>
+                    <p><strong>Patient Name:</strong> ${app.patientName}</p>
+                    <p><strong>Doctor Name:</strong> ${app.doctorName}</p>
+                    <p><strong>Date:</strong> ${app.date}</p>
+                    <p><strong>Time:</strong> ${app.time}</p>
+                </div>
+            `).join('');
+                    }
+
+                    loading.classList.add('hidden');
+                }, 1000);
+            }
+
+            // Initialize the application
+            populateDoctors();
+
+        </script>
+</body>
+
+</html>
